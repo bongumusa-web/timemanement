@@ -1,0 +1,1053 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Pulse - Schedule Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-alx { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .task-toolbox { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .task-brocod { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .task-workout { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .task-cooking { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .task-free { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .task-commute { background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); }
+        
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .task-item {
+            transition: all 0.2s ease;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .time-slot {
+            transition: all 0.2s ease;
+        }
+        
+        .time-slot:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+    <!-- Login Screen (Initially Visible) -->
+    <div id="loginScreen" class="glass-card w-full max-w-md p-8 slide-in">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-calendar-check text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800">Productivity Pulse</h1>
+            <p class="text-gray-600 mt-2">Schedule your tasks, track progress, and stay productive</p>
+        </div>
+        
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-gray-700 text-sm font-medium mb-2" for="email">Email</label>
+                <input type="email" id="email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="you@example.com">
+            </div>
+            
+            <div>
+                <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Password</label>
+                <input type="password" id="password" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" placeholder="••••••••">
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                    <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                </div>
+                
+                <a href="#" class="text-sm text-purple-600 hover:text-purple-800 font-medium">Forgot password?</a>
+            </div>
+            
+            <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-3 rounded-lg hover:opacity-90 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                Sign In
+            </button>
+            
+            <p class="text-center text-gray-600 text-sm">
+                Don't have an account? 
+                <a href="#" id="registerLink" class="text-purple-600 font-medium hover:text-purple-800">Register</a>
+            </p>
+        </form>
+        
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <p class="text-center text-xs text-gray-500">
+                For this demo, you can use any email/password. Data is stored locally.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Main App Screen (Initially Hidden) -->
+    <div id="appScreen" class="w-full max-w-6xl hidden">
+        <!-- Header -->
+        <header class="glass-card p-6 mb-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mr-4">
+                    <i class="fas fa-calendar-check text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Productivity Pulse</h1>
+                    <p class="text-gray-600">Welcome back, <span id="userName">Alex</span>!</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button id="notificationBtn" class="relative p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                    <i class="fas fa-bell text-gray-700 text-xl"></i>
+                    <span id="notificationCount" class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                </button>
+                
+                <div class="relative">
+                    <button id="userMenuBtn" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center text-white font-medium">A</div>
+                        <i class="fas fa-chevron-down text-gray-600"></i>
+                    </button>
+                    
+                    <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-10">
+                        <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition">Profile Settings</a>
+                        <a href="#" id="logoutBtn" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 transition">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar -->
+            <div class="lg:w-1/4">
+                <div class="glass-card p-6 mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Daily Schedule</h2>
+                    <p class="text-gray-600 mb-6">Your optimized weekday schedule with flexible tasks for cooking and workouts.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Total Tasks</span>
+                            <span id="totalTasks" class="font-bold text-purple-600">7</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Completed Today</span>
+                            <span id="completedTasks" class="font-bold text-green-600">3</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Notifications</span>
+                            <span id="activeNotifications" class="font-bold text-yellow-600">2 Active</span>
+                        </div>
+                    </div>
+                    
+                    <button id="addTaskBtn" class="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-3 rounded-lg hover:opacity-90 transition duration-300">
+                        <i class="fas fa-plus mr-2"></i> Add New Task
+                    </button>
+                    
+                    <div class="mt-8">
+                        <h3 class="font-medium text-gray-700 mb-3">Task Categories</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full task-alx mr-2"></div>
+                                <span class="text-gray-700">ALX Frontend</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full task-toolbox mr-2"></div>
+                                <span class="text-gray-700">Toolbox Project</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full task-brocod mr-2"></div>
+                                <span class="text-gray-700">Bro Cod React</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full task-workout mr-2"></div>
+                                <span class="text-gray-700">Workout</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full task-cooking mr-2"></div>
+                                <span class="text-gray-700">Cooking</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full task-free mr-2"></div>
+                                <span class="text-gray-700">Free/Relax</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-gray-800 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button id="enableNotificationsBtn" class="w-full flex items-center justify-center space-x-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium py-3 rounded-lg transition">
+                            <i class="fas fa-bell"></i>
+                            <span>Enable Notifications</span>
+                        </button>
+                        <button id="viewAllTasksBtn" class="w-full flex items-center justify-center space-x-2 bg-green-50 text-green-700 hover:bg-green-100 font-medium py-3 rounded-lg transition">
+                            <i class="fas fa-tasks"></i>
+                            <span>View All Tasks</span>
+                        </button>
+                        <button id="exportScheduleBtn" class="w-full flex items-center justify-center space-x-2 bg-purple-50 text-purple-700 hover:bg-purple-100 font-medium py-3 rounded-lg transition">
+                            <i class="fas fa-file-export"></i>
+                            <span>Export Schedule</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="lg:w-3/4">
+                <div class="glass-card p-6 mb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Weekly Schedule</h2>
+                        
+                        <div class="flex space-x-2">
+                            <div class="relative">
+                                <select id="dayFilter" class="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                    <option value="all">All Days</option>
+                                    <option value="mon">Monday</option>
+                                    <option value="tue">Tuesday</option>
+                                    <option value="wed">Wednesday</option>
+                                    <option value="thu">Thursday</option>
+                                    <option value="fri">Friday</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            
+                            <button id="todayBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-2 px-4 rounded-lg hover:opacity-90 transition">
+                                Today
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Timetable -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 text-gray-600 font-medium">Time</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Monday</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Tuesday</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Wednesday</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Thursday</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Friday</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetableBody">
+                                <!-- Timetable rows will be generated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Task List -->
+                <div class="glass-card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Today's Tasks</h2>
+                    
+                    <div id="tasksContainer" class="space-y-4">
+                        <!-- Task items will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-gray-500 text-sm">
+            <p>Productivity Pulse &copy; 2023 | Data stored locally in your browser</p>
+            <p class="mt-1">Switch to a real database backend for multi-device sync and secure login.</p>
+        </footer>
+    </div>
+    
+    <!-- Add Task Modal -->
+    <div id="addTaskModal" class="modal-overlay hidden">
+        <div class="glass-card w-full max-w-md p-6 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Add New Task</h3>
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            
+            <form id="taskForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="taskName">Task Name</label>
+                    <input type="text" id="taskName" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="e.g., ALX Frontend Project">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="taskType">Task Type</label>
+                    <select id="taskType" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="alx">ALX Frontend</option>
+                        <option value="toolbox">Toolbox Project</option>
+                        <option value="brocod">Bro Cod React</option>
+                        <option value="workout">Workout</option>
+                        <option value="cooking">Cooking</option>
+                        <option value="free">Free/Relax</option>
+                        <option value="commute">Commute</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="startTime">Start Time</label>
+                        <input type="time" id="startTime" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" value="19:00">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="endTime">End Time</label>
+                        <input type="time" id="endTime" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" value="21:00">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="taskDays">Days</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox text-purple-600" value="mon" checked>
+                            <span class="ml-2 text-gray-700">Mon</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox text-purple-600" value="tue" checked>
+                            <span class="ml-2 text-gray-700">Tue</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox text-purple-600" value="wed" checked>
+                            <span class="ml-2 text-gray-700">Wed</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox text-purple-600" value="thu" checked>
+                            <span class="ml-2 text-gray-700">Thu</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" class="form-checkbox text-purple-600" value="fri" checked>
+                            <span class="ml-2 text-gray-700">Fri</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2" for="notification">Notification</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="notification" class="form-checkbox text-purple-600" checked>
+                        <span class="ml-2 text-gray-700">Send reminder before task starts</span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" id="cancelTaskBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="glass-card fixed top-24 right-4 w-80 max-w-full hidden z-20">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800">Notifications</h3>
+            <button id="closeNotificationsBtn" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+        
+        <div class="max-h-96 overflow-y-auto">
+            <div id="notificationsList" class="p-2">
+                <!-- Notifications will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200">
+            <button id="clearNotificationsBtn" class="w-full text-center text-sm text-gray-500 hover:text-gray-700">Clear All Notifications</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const appScreen = document.getElementById('appScreen');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const addTaskModal = document.getElementById('addTaskModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelTaskBtn = document.getElementById('cancelTaskBtn');
+        const taskForm = document.getElementById('taskForm');
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationsPanel = document.getElementById('notificationsPanel');
+        const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+        const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+        const timetableBody = document.getElementById('timetableBody');
+        const tasksContainer = document.getElementById('tasksContainer');
+        const dayFilter = document.getElementById('dayFilter');
+        const todayBtn = document.getElementById('todayBtn');
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userMenu = document.getElementById('userMenu');
+        const enableNotificationsBtn = document.getElementById('enableNotificationsBtn');
+        const notificationCount = document.getElementById('notificationCount');
+        
+        // Initial sample data
+        let tasks = [
+            { id: 1, name: "Commute", type: "commute", startTime: "17:00", endTime: "18:30", days: ["mon", "tue", "wed", "thu", "fri"], completed: true, notification: true },
+            { id: 2, name: "Cooking", type: "cooking", startTime: "18:30", endTime: "19:00", days: ["mon", "wed", "fri"], completed: false, notification: true },
+            { id: 3, name: "ALX Frontend", type: "alx", startTime: "19:00", endTime: "21:00", days: ["mon", "tue", "wed", "thu", "fri"], completed: true, notification: true },
+            { id: 4, name: "Toolbox Project", type: "toolbox", startTime: "21:00", endTime: "22:00", days: ["mon", "tue", "thu", "fri"], completed: false, notification: true },
+            { id: 5, name: "Bro Cod React", type: "brocod", startTime: "22:00", endTime: "22:30", days: ["mon", "tue", "wed", "thu"], completed: false, notification: true },
+            { id: 6, name: "Workout", type: "workout", startTime: "22:30", endTime: "23:00", days: ["tue", "thu"], completed: true, notification: true },
+            { id: 7, name: "Free/Relax", type: "free", startTime: "23:00", endTime: "23:30", days: ["mon", "tue", "wed", "thu", "fri"], completed: false, notification: false }
+        ];
+        
+        let notifications = [
+            { id: 1, message: "ALX Frontend starts in 10 minutes", time: "18:50", read: false },
+            { id: 2, message: "Cooking scheduled for today at 6:30 PM", time: "12:00", read: false },
+            { id: 3, message: "Toolbox Project completed yesterday", time: "Yesterday", read: true }
+        ];
+        
+        let currentUser = null;
+        
+        // Initialize the app
+        function initApp() {
+            // Check if user is already logged in (from localStorage)
+            const savedUser = localStorage.getItem('productivityPulseUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showAppScreen();
+            }
+            
+            renderTimetable();
+            renderTasks();
+            renderNotifications();
+            updateTaskCounts();
+            
+            // Request notification permission on load
+            if ("Notification" in window && Notification.permission === "default") {
+                setTimeout(() => {
+                    Notification.requestPermission();
+                }, 1000);
+            }
+        }
+        
+        // Show the app screen (after login)
+        function showAppScreen() {
+            loginScreen.classList.add('hidden');
+            appScreen.classList.remove('hidden');
+            document.getElementById('userName').textContent = currentUser ? currentUser.name : 'User';
+        }
+        
+        // Render timetable
+        function renderTimetable() {
+            // Clear existing content
+            timetableBody.innerHTML = '';
+            
+            // Time slots for the schedule
+            const timeSlots = [
+                { start: "17:00", end: "18:30" },
+                { start: "18:30", end: "19:00" },
+                { start: "19:00", end: "21:00" },
+                { start: "21:00", end: "22:00" },
+                { start: "22:00", end: "22:30" },
+                { start: "22:30", end: "23:00" },
+                { start: "23:00", end: "23:30" }
+            ];
+            
+            // Days of the week
+            const days = ["mon", "tue", "wed", "thu", "fri"];
+            const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+            
+            // Create timetable rows
+            timeSlots.forEach((timeSlot, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100';
+                
+                // Time column
+                const timeCell = document.createElement('td');
+                timeCell.className = 'py-4 pr-4 time-slot';
+                timeCell.innerHTML = `
+                    <div class="font-medium text-gray-800">${formatTime(timeSlot.start)} - ${formatTime(timeSlot.end)}</div>
+                    <div class="text-xs text-gray-500">${getDuration(timeSlot.start, timeSlot.end)}</div>
+                `;
+                row.appendChild(timeCell);
+                
+                // Day columns
+                days.forEach(day => {
+                    const dayCell = document.createElement('td');
+                    dayCell.className = 'py-4 px-2 time-slot';
+                    
+                    // Find tasks for this time slot and day
+                    const dayTasks = tasks.filter(task => 
+                        task.startTime === timeSlot.start && 
+                        task.endTime === timeSlot.end && 
+                        task.days.includes(day)
+                    );
+                    
+                    if (dayTasks.length > 0) {
+                        const task = dayTasks[0];
+                        const taskClass = getTaskClass(task.type);
+                        
+                        dayCell.innerHTML = `
+                            <div class="task-item p-3 rounded-lg text-white ${taskClass}">
+                                <div class="font-medium">${task.name}</div>
+                                <div class="text-xs opacity-90 mt-1">${formatTime(task.startTime)} - ${formatTime(task.endTime)}</div>
+                                <div class="flex items-center justify-between mt-2">
+                                    <div class="text-xs">${task.completed ? '✓ Completed' : 'Pending'}</div>
+                                    <button class="toggle-complete text-xs bg-white bg-opacity-20 px-2 py-1 rounded" data-id="${task.id}">
+                                        ${task.completed ? 'Undo' : 'Complete'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        dayCell.innerHTML = '<div class="h-16"></div>';
+                    }
+                    
+                    row.appendChild(dayCell);
+                });
+                
+                timetableBody.appendChild(row);
+            });
+            
+            // Add event listeners for complete buttons
+            document.querySelectorAll('.toggle-complete').forEach(button => {
+                button.addEventListener('click', function() {
+                    const taskId = parseInt(this.getAttribute('data-id'));
+                    toggleTaskComplete(taskId);
+                });
+            });
+        }
+        
+        // Render task list
+        function renderTasks() {
+            // Clear existing content
+            tasksContainer.innerHTML = '';
+            
+            // Get today's day (mon, tue, etc.)
+            const today = new Date().toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase().substring(0, 3);
+            
+            // Filter tasks for today
+            const todayTasks = tasks.filter(task => task.days.includes(today));
+            
+            if (todayTasks.length === 0) {
+                tasksContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No tasks scheduled for today.</p>';
+                return;
+            }
+            
+            // Sort tasks by start time
+            todayTasks.sort((a, b) => a.startTime.localeCompare(b.startTime));
+            
+            // Render each task
+            todayTasks.forEach(task => {
+                const taskClass = getTaskClass(task.type);
+                
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-item p-4 rounded-lg border border-gray-200';
+                taskElement.innerHTML = `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="flex items-start">
+                            <div class="w-3 h-3 rounded-full mt-2 mr-3 ${taskClass.replace('text-white', '')}"></div>
+                            <div>
+                                <div class="font-medium text-gray-800">${task.name}</div>
+                                <div class="text-sm text-gray-600 mt-1">
+                                    <i class="far fa-clock mr-1"></i> ${formatTime(task.startTime)} - ${formatTime(task.endTime)} 
+                                    <span class="mx-2">•</span>
+                                    <span class="${task.completed ? 'text-green-600' : 'text-yellow-600'}">
+                                        <i class="fas ${task.completed ? 'fa-check-circle' : 'fa-hourglass-half'} mr-1"></i>
+                                        ${task.completed ? 'Completed' : 'Pending'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                            <button class="toggle-complete-task px-4 py-2 rounded-lg ${task.completed ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-100 text-green-700 hover:bg-green-200'} transition" data-id="${task.id}">
+                                <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'} mr-2"></i>
+                                ${task.completed ? 'Mark Pending' : 'Mark Complete'}
+                            </button>
+                            <button class="delete-task px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition" data-id="${task.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                tasksContainer.appendChild(taskElement);
+            });
+            
+            // Add event listeners
+            document.querySelectorAll('.toggle-complete-task').forEach(button => {
+                button.addEventListener('click', function() {
+                    const taskId = parseInt(this.getAttribute('data-id'));
+                    toggleTaskComplete(taskId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-task').forEach(button => {
+                button.addEventListener('click', function() {
+                    const taskId = parseInt(this.getAttribute('data-id'));
+                    deleteTask(taskId);
+                });
+            });
+        }
+        
+        // Render notifications
+        function renderNotifications() {
+            const notificationsList = document.getElementById('notificationsList');
+            notificationsList.innerHTML = '';
+            
+            const unreadCount = notifications.filter(n => !n.read).length;
+            notificationCount.textContent = unreadCount;
+            
+            if (notifications.length === 0) {
+                notificationsList.innerHTML = '<p class="text-gray-500 text-center py-8">No notifications</p>';
+                return;
+            }
+            
+            notifications.forEach(notification => {
+                const notificationElement = document.createElement('div');
+                notificationElement.className = `p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${notification.read ? '' : 'bg-blue-50'}`;
+                notificationElement.innerHTML = `
+                    <div class="flex justify-between">
+                        <div class="font-medium text-gray-800">${notification.message}</div>
+                        ${!notification.read ? '<span class="w-2 h-2 rounded-full bg-blue-500 mt-1"></span>' : ''}
+                    </div>
+                    <div class="text-sm text-gray-500 mt-1">
+                        <i class="far fa-clock mr-1"></i> ${notification.time}
+                    </div>
+                `;
+                
+                notificationElement.addEventListener('click', () => {
+                    markNotificationAsRead(notification.id);
+                });
+                
+                notificationsList.appendChild(notificationElement);
+            });
+        }
+        
+        // Update task counts
+        function updateTaskCounts() {
+            const today = new Date().toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase().substring(0, 3);
+            const todayTasks = tasks.filter(task => task.days.includes(today));
+            const completedToday = todayTasks.filter(task => task.completed).length;
+            
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('completedTasks').textContent = completedToday;
+            
+            const activeNotifications = notifications.filter(n => !n.read).length;
+            document.getElementById('activeNotifications').textContent = `${activeNotifications} Active`;
+        }
+        
+        // Toggle task completion status
+        function toggleTaskComplete(taskId) {
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+            if (taskIndex !== -1) {
+                tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                
+                // Save to localStorage
+                saveTasksToStorage();
+                
+                // Update UI
+                renderTimetable();
+                renderTasks();
+                updateTaskCounts();
+                
+                // Show notification
+                const task = tasks[taskIndex];
+                const status = task.completed ? 'completed' : 'marked as pending';
+                addNotification(`Task "${task.name}" ${status}`, new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+                
+                // Show browser notification if enabled
+                if (task.completed && Notification.permission === 'granted') {
+                    new Notification('Task Completed!', {
+                        body: `You've completed "${task.name}"`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/190/190411.png'
+                    });
+                }
+            }
+        }
+        
+        // Delete a task
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                const taskIndex = tasks.findIndex(task => task.id === taskId);
+                if (taskIndex !== -1) {
+                    const taskName = tasks[taskIndex].name;
+                    tasks.splice(taskIndex, 1);
+                    
+                    // Save to localStorage
+                    saveTasksToStorage();
+                    
+                    // Update UI
+                    renderTimetable();
+                    renderTasks();
+                    updateTaskCounts();
+                    
+                    // Show notification
+                    addNotification(`Task "${taskName}" deleted`, new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+                }
+            }
+        }
+        
+        // Add a new task
+        function addNewTask(taskData) {
+            const newTask = {
+                id: tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1,
+                name: taskData.name,
+                type: taskData.type,
+                startTime: taskData.startTime,
+                endTime: taskData.endTime,
+                days: taskData.days,
+                completed: false,
+                notification: taskData.notification
+            };
+            
+            tasks.push(newTask);
+            
+            // Save to localStorage
+            saveTasksToStorage();
+            
+            // Update UI
+            renderTimetable();
+            renderTasks();
+            updateTaskCounts();
+            
+            // Show notification
+            addNotification(`New task "${taskData.name}" added to your schedule`, new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            
+            // Close modal
+            addTaskModal.classList.add('hidden');
+            taskForm.reset();
+        }
+        
+        // Add a notification
+        function addNotification(message, time) {
+            const newNotification = {
+                id: notifications.length > 0 ? Math.max(...notifications.map(n => n.id)) + 1 : 1,
+                message,
+                time,
+                read: false
+            };
+            
+            notifications.unshift(newNotification);
+            renderNotifications();
+            
+            // Save to localStorage
+            localStorage.setItem('productivityPulseNotifications', JSON.stringify(notifications));
+        }
+        
+        // Mark notification as read
+        function markNotificationAsRead(notificationId) {
+            const notificationIndex = notifications.findIndex(n => n.id === notificationId);
+            if (notificationIndex !== -1) {
+                notifications[notificationIndex].read = true;
+                renderNotifications();
+                
+                // Save to localStorage
+                localStorage.setItem('productivityPulseNotifications', JSON.stringify(notifications));
+            }
+        }
+        
+        // Save tasks to localStorage
+        function saveTasksToStorage() {
+            localStorage.setItem('productivityPulseTasks', JSON.stringify(tasks));
+        }
+        
+        // Load tasks from localStorage
+        function loadTasksFromStorage() {
+            const savedTasks = localStorage.getItem('productivityPulseTasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+            }
+            
+            const savedNotifications = localStorage.getItem('productivityPulseNotifications');
+            if (savedNotifications) {
+                notifications = JSON.parse(savedNotifications);
+            }
+        }
+        
+        // Helper functions
+        function formatTime(timeStr) {
+            const [hours, minutes] = timeStr.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+        
+        function getDuration(startTime, endTime) {
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            const [endHour, endMinute] = endTime.split(':').map(Number);
+            
+            const startTotal = startHour * 60 + startMinute;
+            const endTotal = endHour * 60 + endMinute;
+            
+            const duration = endTotal - startTotal;
+            return `${duration} min`;
+        }
+        
+        function getTaskClass(taskType) {
+            switch(taskType) {
+                case 'alx': return 'task-alx text-white';
+                case 'toolbox': return 'task-toolbox text-white';
+                case 'brocod': return 'task-brocod text-white';
+                case 'workout': return 'task-workout text-white';
+                case 'cooking': return 'task-cooking text-white';
+                case 'free': return 'task-free text-gray-800';
+                case 'commute': return 'task-commute text-gray-800';
+                default: return 'bg-gray-200 text-gray-800';
+            }
+        }
+        
+        // Event Listeners
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation
+            if (email && password) {
+                // Create user object
+                currentUser = {
+                    email,
+                    name: email.split('@')[0],
+                    loginTime: new Date().toISOString()
+                };
+                
+                // Save to localStorage
+                localStorage.setItem('productivityPulseUser', JSON.stringify(currentUser));
+                
+                // Load saved data
+                loadTasksFromStorage();
+                
+                // Show app screen
+                showAppScreen();
+                
+                // Update UI with loaded data
+                renderTimetable();
+                renderTasks();
+                renderNotifications();
+                updateTaskCounts();
+                
+                // Show welcome notification
+                addNotification(`Welcome back to Productivity Pulse! You have ${tasks.filter(t => !t.completed).length} pending tasks.`, new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            }
+        });
+        
+        document.getElementById('registerLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('For this demo, you can use any email/password combination to login. Registration functionality would be implemented with a real backend.');
+        });
+        
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('productivityPulseUser');
+                currentUser = null;
+                appScreen.classList.add('hidden');
+                loginScreen.classList.remove('hidden');
+                loginForm.reset();
+            }
+        });
+        
+        addTaskBtn.addEventListener('click', function() {
+            addTaskModal.classList.remove('hidden');
+        });
+        
+        closeModalBtn.addEventListener('click', function() {
+            addTaskModal.classList.add('hidden');
+        });
+        
+        cancelTaskBtn.addEventListener('click', function() {
+            addTaskModal.classList.add('hidden');
+            taskForm.reset();
+        });
+        
+        taskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const taskName = document.getElementById('taskName').value;
+            const taskType = document.getElementById('taskType').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const notification = document.getElementById('notification').checked;
+            
+            // Get selected days
+            const dayCheckboxes = document.querySelectorAll('input[type="checkbox"][value^="mon"], input[type="checkbox"][value^="tue"], input[type="checkbox"][value^="wed"], input[type="checkbox"][value^="thu"], input[type="checkbox"][value^="fri"]');
+            const selectedDays = Array.from(dayCheckboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+            
+            if (selectedDays.length === 0) {
+                alert('Please select at least one day for the task.');
+                return;
+            }
+            
+            addNewTask({
+                name: taskName,
+                type: taskType,
+                startTime,
+                endTime,
+                days: selectedDays,
+                notification
+            });
+        });
+        
+        notificationBtn.addEventListener('click', function() {
+            notificationsPanel.classList.toggle('hidden');
+        });
+        
+        closeNotificationsBtn.addEventListener('click', function() {
+            notificationsPanel.classList.add('hidden');
+        });
+        
+        clearNotificationsBtn.addEventListener('click', function() {
+            if (notifications.length > 0 && confirm('Clear all notifications?')) {
+                notifications = [];
+                renderNotifications();
+                localStorage.setItem('productivityPulseNotifications', JSON.stringify(notifications));
+            }
+        });
+        
+        dayFilter.addEventListener('change', function() {
+            // In a real app, this would filter the timetable
+            const selectedDay = this.value;
+            if (selectedDay === 'all') {
+                renderTimetable();
+            } else {
+                // For demo purposes, just show a message
+                alert(`Filtering for ${selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}. In a full implementation, the timetable would update to show only tasks for that day.`);
+            }
+        });
+        
+        todayBtn.addEventListener('click', function() {
+            dayFilter.value = 'all';
+            renderTimetable();
+            renderTasks();
+        });
+        
+        userMenuBtn.addEventListener('click', function() {
+            userMenu.classList.toggle('hidden');
+        });
+        
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!userMenuBtn.contains(event.target) && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+        
+        enableNotificationsBtn.addEventListener('click', function() {
+            if ("Notification" in window) {
+                if (Notification.permission === "granted") {
+                    alert("Notifications are already enabled!");
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            alert("Notifications enabled! You'll receive reminders for your tasks.");
+                            addNotification("Browser notifications enabled", new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+                        }
+                    });
+                } else {
+                    alert("Notifications were previously denied. Please enable them in your browser settings.");
+                }
+            } else {
+                alert("This browser doesn't support notifications.");
+            }
+        });
+        
+        // Demo: Simulate task notifications
+        function simulateTaskNotifications() {
+            // Check if any tasks are starting soon
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+            
+            // Find tasks starting in the next 15 minutes
+            tasks.forEach(task => {
+                if (task.notification && !task.completed) {
+                    const [taskHour, taskMinute] = task.startTime.split(':').map(Number);
+                    const taskTime = taskHour * 60 + taskMinute;
+                    const currentTime = currentHour * 60 + currentMinute;
+                    
+                    // If task starts in 15 minutes
+                    if (taskTime - currentTime === 15) {
+                        addNotification(`"${task.name}" starts in 15 minutes (${formatTime(task.startTime)})`, currentTimeStr);
+                        
+                        // Show browser notification if enabled
+                        if (Notification.permission === 'granted') {
+                            new Notification('Task Starting Soon', {
+                                body: `"${task.name}" starts in 15 minutes`,
+                                icon: 'https://cdn-icons-png.flaticon.com/512/3114/3114886.png'
+                            });
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize the app
+        initApp();
+        
+        // Check for notifications every minute
+        setInterval(simulateTaskNotifications, 60000);
+        
+        // Demo: Add a welcome notification after 2 seconds
+        setTimeout(() => {
+            if (currentUser && notifications.length === 3) { // Only if using initial demo data
+                addNotification("Try adding a new task or marking one as complete!", new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
